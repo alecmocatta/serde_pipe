@@ -1,0 +1,33 @@
+[package]
+name = "serde_pipe"
+version = "0.1.0"
+license = "Apache-2.0"
+authors = ["Alec Mocatta <alec@mocatta.net>"]
+categories = ["development-tools"]
+keywords = ["env"]
+description = """
+Turn serde+bincode into a pipe: push `T`s and pull `u8`s, or vice versa.
+
+This library gives you a `Serializer` pipe, into which you can push `T`s and pull `u8`s; and a `Deserializer` pipe, into which you can push `u8`s and pull `T`s.
+"""
+repository = "https://github.com/alecmocatta/serde_pipe"
+homepage = "https://github.com/alecmocatta/serde_pipe"
+documentation = "https://docs.rs/serde_pipe/0.1.0"
+readme = "README.md"
+
+[badges]
+#appveyor = { repository = "alecmocatta/serde_pipe" }
+circle-ci = { repository = "alecmocatta/serde_pipe" }
+#gitlab = { repository = "alecmocatta/serde_pipe" }
+travis-ci = { repository = "alecmocatta/serde_pipe" }
+
+maintenance = { status = "actively-developed" }
+
+[dependencies]
+fringe = {git = "https://github.com/alecmocatta/libfringe", rev = "8613d9d8", features = ["valgrind"]}
+bincode = "1.0"
+serde = "1.0"
+either = {version = "1.5", features = ["serde"]}
+
+[dev-dependencies]
+rand = "0.5"
