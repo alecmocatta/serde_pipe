@@ -827,7 +827,7 @@ mod tests {
 	fn serializer() {
 		let mut rng =
 			XorShiftRng::from_seed([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
-		for i in 0..50_000 {
+		for _ in 0..50_000 {
 			let mut serializer = Serializer::new();
 			let mut queue = VecDeque::new();
 			for _ in 0..rng.gen_range(0, 10_000) {
@@ -909,7 +909,7 @@ mod tests {
 	fn deserializer() {
 		let mut rng =
 			XorShiftRng::from_seed([15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]);
-		for i in 0..50_000 {
+		for _ in 0..50_000 {
 			let mut deserializer = Deserializer::new();
 			let mut queue = VecDeque::new();
 			let mut pipe = VecDeque::new();
@@ -1027,7 +1027,7 @@ mod tests {
 	#[test]
 	fn both() {
 		let mut rng = XorShiftRng::from_seed([0, 1, 2, 3, 4, 5, 6, 7, 7, 6, 5, 4, 3, 2, 1, 0]);
-		for i in 0..50_000 {
+		for _ in 0..50_000 {
 			let mut serializer = Serializer::new();
 			let mut deserializer = Deserializer::new();
 			let mut queue = VecDeque::new();
