@@ -42,16 +42,13 @@
 	unused_import_braces,
 	unused_qualifications,
 	unused_results,
+	clippy::pedantic
 )] // from https://github.com/rust-unofficial/patterns/blob/master/anti_patterns/deny-warnings.md
-#![cfg_attr(feature = "cargo-clippy", warn(clippy_pedantic))]
-#![cfg_attr(
-	feature = "cargo-clippy",
-	allow(
-		items_after_statements,
-		inline_always,
-		new_without_default_derive,
-		boxed_local
-	)
+#![allow(
+	clippy::items_after_statements,
+	clippy::inline_always,
+	clippy::new_without_default_derive,
+	clippy::boxed_local
 )]
 
 extern crate bincode;
@@ -267,13 +264,12 @@ impl Serializer {
 		if self.done {
 			Some(move |t| {
 				self.done = false;
-				if self.serializer.is_none()
-					|| !self
-						.serializer
-						.as_ref()
-						.unwrap()
-						.as_any_ref()
-						.is::<SerializerInner<T>>()
+				if self.serializer.is_none() || !self
+					.serializer
+					.as_ref()
+					.unwrap()
+					.as_any_ref()
+					.is::<SerializerInner<T>>()
 				{
 					self.serializer = Some(Box::new(SerializerInner::<T>::new(
 						self.serializer.take().map(|x| x.into_stack_box()),
@@ -691,13 +687,12 @@ impl Deserializer {
 	) -> Option<impl FnOnce() -> T + 'a> {
 		if self.done {
 			self.done = false;
-			if self.deserializer.is_none()
-				|| !self
-					.deserializer
-					.as_ref()
-					.unwrap()
-					.as_any_ref()
-					.is::<DeserializerInner<T>>()
+			if self.deserializer.is_none() || !self
+				.deserializer
+				.as_ref()
+				.unwrap()
+				.as_any_ref()
+				.is::<DeserializerInner<T>>()
 			{
 				self.deserializer = Some(Box::new(DeserializerInner::<T>::new(
 					self.deserializer.take().map(|x| x.into_stack_box()),
@@ -796,6 +791,12 @@ impl fmt::Debug for Deserializer {
 
 #[cfg(test)]
 mod tests {
+	#![allow(
+		clippy::cyclomatic_complexity,
+		clippy::let_unit_value,
+		clippy::collapsible_if
+	)]
+
 	use super::*;
 	use rand::{prng::XorShiftRng, Rng, SeedableRng};
 	use std::{collections::VecDeque, io};
@@ -835,12 +836,11 @@ mod tests {
 					match rng.gen_range(0, 6) {
 						0 => {
 							if let Some(push) = serializer.push() {
-								let x = ();
 								let mut y = vec![];
-								bincode::serialize_into(&mut y, &x).unwrap();
+								bincode::serialize_into(&mut y, &()).unwrap();
 								assert_eq!(y, vec![]);
 								queue.push_back(0);
-								push(x);
+								push(());
 							}
 						}
 						1 => {
@@ -919,9 +919,8 @@ mod tests {
 						if pipe.len() < 100 {
 							match rng.gen_range(0, 6) {
 								0 => {
-									let x = ();
 									let mut y = vec![];
-									bincode::serialize_into(&mut y, &x).unwrap();
+									bincode::serialize_into(&mut y, &()).unwrap();
 									assert_eq!(y, vec![]);
 									pipe.push_back(0);
 									queue.push_back(Queue::Unit);
@@ -955,7 +954,8 @@ mod tests {
 									bincode::serialize_into::<_, String>(
 										&mut VecDequeWriter(&mut pipe),
 										&x,
-									).unwrap();
+									)
+									.unwrap();
 									queue.push_back(Queue::String(x.clone()));
 								}
 								_ => unreachable!(),
@@ -969,42 +969,42 @@ mod tests {
 					}
 					2 => {
 						if let Some(front) = queue.front() {
-							match front {
-								&Queue::Unit => {
+							match *front {
+								Queue::Unit => {
 									if let Some(pull) = deserializer.pull() {
 										let () = pull();
 										let _ = queue.pop_front().unwrap();
 									}
 								}
-								&Queue::U8(q) => {
+								Queue::U8(q) => {
 									if let Some(pull) = deserializer.pull() {
 										let x: u8 = pull();
 										assert_eq!(x, q);
 										let _ = queue.pop_front().unwrap();
 									}
 								}
-								&Queue::U16(q) => {
+								Queue::U16(q) => {
 									if let Some(pull) = deserializer.pull() {
 										let x: u16 = pull();
 										assert_eq!(x, q);
 										let _ = queue.pop_front().unwrap();
 									}
 								}
-								&Queue::U32(q) => {
+								Queue::U32(q) => {
 									if let Some(pull) = deserializer.pull() {
 										let x: u32 = pull();
 										assert_eq!(x, q);
 										let _ = queue.pop_front().unwrap();
 									}
 								}
-								&Queue::U64(q) => {
+								Queue::U64(q) => {
 									if let Some(pull) = deserializer.pull() {
 										let x: u64 = pull();
 										assert_eq!(x, q);
 										let _ = queue.pop_front().unwrap();
 									}
 								}
-								&Queue::String(ref q) => {
+								Queue::String(ref q) => {
 									if let Some(pull) = deserializer.pull() {
 										let x: String = pull();
 										assert_eq!(&x, q);
@@ -1036,12 +1036,11 @@ mod tests {
 					0 => match rng.gen_range(0, 6) {
 						0 => {
 							if let Some(push) = serializer.push() {
-								let x = ();
 								let mut y = vec![];
-								bincode::serialize_into(&mut y, &x).unwrap();
+								bincode::serialize_into(&mut y, &()).unwrap();
 								assert_eq!(y, vec![]);
 								queue.push_back(Queue::Unit);
-								push(x);
+								push(());
 							}
 						}
 						1 => {
@@ -1088,42 +1087,42 @@ mod tests {
 					}
 					2 => {
 						if let Some(front) = queue.front() {
-							match front {
-								&Queue::Unit => {
+							match *front {
+								Queue::Unit => {
 									if let Some(pull) = deserializer.pull() {
 										let () = pull();
 										let _ = queue.pop_front().unwrap();
 									}
 								}
-								&Queue::U8(q) => {
+								Queue::U8(q) => {
 									if let Some(pull) = deserializer.pull() {
 										let x: u8 = pull();
 										assert_eq!(x, q);
 										let _ = queue.pop_front().unwrap();
 									}
 								}
-								&Queue::U16(q) => {
+								Queue::U16(q) => {
 									if let Some(pull) = deserializer.pull() {
 										let x: u16 = pull();
 										assert_eq!(x, q);
 										let _ = queue.pop_front().unwrap();
 									}
 								}
-								&Queue::U32(q) => {
+								Queue::U32(q) => {
 									if let Some(pull) = deserializer.pull() {
 										let x: u32 = pull();
 										assert_eq!(x, q);
 										let _ = queue.pop_front().unwrap();
 									}
 								}
-								&Queue::U64(q) => {
+								Queue::U64(q) => {
 									if let Some(pull) = deserializer.pull() {
 										let x: u64 = pull();
 										assert_eq!(x, q);
 										let _ = queue.pop_front().unwrap();
 									}
 								}
-								&Queue::String(ref q) => {
+								Queue::String(ref q) => {
 									if let Some(pull) = deserializer.pull() {
 										let x: String = pull();
 										assert_eq!(&x, q);
