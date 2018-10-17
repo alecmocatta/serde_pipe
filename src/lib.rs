@@ -828,7 +828,12 @@ mod tests {
 	fn serializer() {
 		let mut rng =
 			XorShiftRng::from_seed([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
-		let iterations = if cfg!(debug_assertions) { 5_000 } else { 50_000 }; // hack until https://internals.rust-lang.org/t/idea-allow-to-query-current-optimization-level-using-cfg-opt-level/7089
+		// hack until https://internals.rust-lang.org/t/idea-allow-to-query-current-optimization-level-using-cfg-opt-level/7089
+		let iterations = if cfg!(debug_assertions) {
+			5_000
+		} else {
+			50_000
+		};
 		for _ in 0..iterations {
 			let mut serializer = Serializer::new();
 			let mut queue = VecDeque::new();
@@ -893,16 +898,12 @@ mod tests {
 					}
 				}
 			}
-			// if let Some(ref mut empty) = serializer.empty() { https://github.com/rust-lang/rust/issues/52706
-			// 	empty();
-			// }
-			let empty = serializer.empty();
-			if empty.is_some() {
+			if let Some(empty) = serializer.empty() {
 				assert_ne!(queue.len(), 0);
-				empty.unwrap()();
+				empty();
 			} else {
 				assert_eq!(queue, vec![]);
-			}
+			};
 		}
 	}
 
@@ -910,7 +911,12 @@ mod tests {
 	fn deserializer() {
 		let mut rng =
 			XorShiftRng::from_seed([15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]);
-		let iterations = if cfg!(debug_assertions) { 5_000 } else { 50_000 }; // hack until https://internals.rust-lang.org/t/idea-allow-to-query-current-optimization-level-using-cfg-opt-level/7089
+		// hack until https://internals.rust-lang.org/t/idea-allow-to-query-current-optimization-level-using-cfg-opt-level/7089
+		let iterations = if cfg!(debug_assertions) {
+			5_000
+		} else {
+			50_000
+		};
 		for _ in 0..iterations {
 			let mut deserializer = Deserializer::new();
 			let mut queue = VecDeque::new();
@@ -1019,17 +1025,21 @@ mod tests {
 					_ => unreachable!(),
 				}
 			}
-			let empty = deserializer.empty();
-			if empty.is_some() {
-				empty.unwrap()();
-			}
+			if let Some(empty) = deserializer.empty() {
+				empty();
+			};
 		}
 	}
 
 	#[test]
 	fn both() {
 		let mut rng = XorShiftRng::from_seed([0, 1, 2, 3, 4, 5, 6, 7, 7, 6, 5, 4, 3, 2, 1, 0]);
-		let iterations = if cfg!(debug_assertions) { 5_000 } else { 50_000 }; // hack until https://internals.rust-lang.org/t/idea-allow-to-query-current-optimization-level-using-cfg-opt-level/7089
+		// hack until https://internals.rust-lang.org/t/idea-allow-to-query-current-optimization-level-using-cfg-opt-level/7089
+		let iterations = if cfg!(debug_assertions) {
+			5_000
+		} else {
+			50_000
+		};
 		for _ in 0..iterations {
 			let mut serializer = Serializer::new();
 			let mut deserializer = Deserializer::new();
@@ -1138,14 +1148,12 @@ mod tests {
 					_ => unreachable!(),
 				}
 			}
-			let empty = serializer.empty();
-			if empty.is_some() {
-				empty.unwrap()();
-			}
-			let empty = deserializer.empty();
-			if empty.is_some() {
-				empty.unwrap()();
-			}
+			if let Some(empty) = serializer.empty() {
+				empty();
+			};
+			if let Some(empty) = deserializer.empty() {
+				empty();
+			};
 		}
 	}
 }
