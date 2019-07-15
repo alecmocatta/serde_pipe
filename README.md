@@ -2,8 +2,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/serde_pipe.svg?style=flat-square&maxAge=86400)](https://crates.io/crates/serde_pipe)
 [![Apache-2.0 licensed](https://img.shields.io/crates/l/serde_pipe.svg?style=flat-square&maxAge=2592000)](LICENSE.txt)
-[![Build Status](https://circleci.com/gh/alecmocatta/serde_pipe/tree/master.svg?style=shield)](https://circleci.com/gh/alecmocatta/serde_pipe)
-[![Build Status](https://travis-ci.com/alecmocatta/serde_pipe.svg?branch=master)](https://travis-ci.com/alecmocatta/serde_pipe)
+[![Build Status](https://dev.azure.com/alecmocatta/serde_pipe/_apis/build/status/alecmocatta.serde_pipe?branchName=master)](https://dev.azure.com/alecmocatta/serde_pipe/_build/latest?definitionId=1&branchName=master)
 
 [Docs](https://docs.rs/serde_pipe/0.1.0)
 
