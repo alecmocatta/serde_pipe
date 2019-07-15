@@ -797,7 +797,7 @@ mod tests {
 	)]
 
 	use super::*;
-	use rand::{prng::XorShiftRng, Rng, SeedableRng};
+	use rand::{rngs::SmallRng, Rng, SeedableRng};
 	use std::{collections::VecDeque, io};
 
 	struct VecDequeWriter<'a>(&'a mut VecDeque<u8>);
@@ -825,8 +825,7 @@ mod tests {
 
 	#[test]
 	fn serializer() {
-		let mut rng =
-			XorShiftRng::from_seed([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
+		let mut rng = SmallRng::from_seed([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
 		// hack until https://internals.rust-lang.org/t/idea-allow-to-query-current-optimization-level-using-cfg-opt-level/7089
 		let iterations = if cfg!(debug_assertions) {
 			5_000
@@ -908,8 +907,7 @@ mod tests {
 
 	#[test]
 	fn deserializer() {
-		let mut rng =
-			XorShiftRng::from_seed([15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]);
+		let mut rng = SmallRng::from_seed([15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]);
 		// hack until https://internals.rust-lang.org/t/idea-allow-to-query-current-optimization-level-using-cfg-opt-level/7089
 		let iterations = if cfg!(debug_assertions) {
 			5_000
@@ -1032,7 +1030,7 @@ mod tests {
 
 	#[test]
 	fn both() {
-		let mut rng = XorShiftRng::from_seed([0, 1, 2, 3, 4, 5, 6, 7, 7, 6, 5, 4, 3, 2, 1, 0]);
+		let mut rng = SmallRng::from_seed([0, 1, 2, 3, 4, 5, 6, 7, 7, 6, 5, 4, 3, 2, 1, 0]);
 		// hack until https://internals.rust-lang.org/t/idea-allow-to-query-current-optimization-level-using-cfg-opt-level/7089
 		let iterations = if cfg!(debug_assertions) {
 			5_000
