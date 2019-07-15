@@ -24,10 +24,10 @@ travis-ci = { repository = "alecmocatta/serde_pipe" }
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-fringe = {git = "https://github.com/edef1c/libfringe", features = ["valgrind"]}
+fringe = { git = "https://github.com/edef1c/libfringe", features = ["valgrind"] }
 bincode = "1.0"
 serde = "1.0"
-either = {version = "1.5", features = ["serde"]}
+either = { version = "1.5", features = ["serde"] }
 
 [dev-dependencies]
-rand = "0.5"
+rand = { version = "0.7", features = ["small_rng"] }
