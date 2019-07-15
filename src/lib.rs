@@ -32,7 +32,6 @@
 //!  * The platforms currently supported are: bare metal, Linux (any libc), FreeBSD, DragonFly BSD, macOS. Windows is not supported.
 
 #![doc(html_root_url = "https://docs.rs/serde_pipe/0.1.0")]
-#![feature(pin, nll)]
 #![warn(
 	missing_copy_implementations,
 	missing_debug_implementations,
@@ -47,7 +46,7 @@
 #![allow(
 	clippy::items_after_statements,
 	clippy::inline_always,
-	clippy::new_without_default_derive,
+	clippy::new_without_default,
 	clippy::boxed_local
 )]
 
@@ -117,7 +116,7 @@ impl<T: serde::ser::Serialize + 'static> SerializerInner<T> {
 					struct Counter<T: Write>(T, usize);
 					impl<T: Write> Counter<T> {
 						fn new(t: T) -> Self {
-							Counter(t, 0)
+							Self(t, 0)
 						}
 						fn count(&self) -> usize {
 							self.1
@@ -190,9 +189,9 @@ impl<T: serde::ser::Serialize + 'static> Drop for SerializerInner<T> {
 trait SerializerInnerBox: Send + Sync {
 	fn next_box(&mut self) -> Option<u8>;
 	fn into_stack_box(self: Box<Self>) -> fringe::OsStack;
-	fn as_any_ref(&self) -> &Any;
-	fn as_any_mut(&mut self) -> &mut Any;
-	fn as_any_box(self: Box<Self>) -> Box<Any>;
+	fn as_any_ref(&self) -> &dyn Any;
+	fn as_any_mut(&mut self) -> &mut dyn Any;
+	fn as_any_box(self: Box<Self>) -> Box<dyn Any>;
 }
 impl<T: serde::ser::Serialize + 'static> SerializerInnerBox for SerializerInner<T> {
 	fn next_box(&mut self) -> Option<u8> {
@@ -201,14 +200,14 @@ impl<T: serde::ser::Serialize + 'static> SerializerInnerBox for SerializerInner<
 	fn into_stack_box(self: Box<Self>) -> fringe::OsStack {
 		self.into_stack()
 	}
-	fn as_any_ref(&self) -> &Any {
-		self as &Any
+	fn as_any_ref(&self) -> &dyn Any {
+		self as &dyn Any
 	}
-	fn as_any_mut(&mut self) -> &mut Any {
-		self as &mut Any
+	fn as_any_mut(&mut self) -> &mut dyn Any {
+		self as &mut dyn Any
 	}
-	fn as_any_box(self: Box<Self>) -> Box<Any> {
-		self as Box<Any>
+	fn as_any_box(self: Box<Self>) -> Box<dyn Any> {
+		self as Box<dyn Any>
 	}
 }
 
@@ -238,7 +237,7 @@ impl<T: serde::ser::Serialize + 'static> SerializerInnerBox for SerializerInner<
 ///
 /// Will panic if dropped while non-empty. In practise this almost always signifies a bug. If you do want to drop it when non-empty, call [`Serializer::empty()`] before dropping it.
 pub struct Serializer {
-	serializer: Option<Box<SerializerInnerBox>>,
+	serializer: Option<Box<dyn SerializerInnerBox>>,
 	done: bool,
 	pull: Option<u8>,
 }
@@ -264,12 +263,13 @@ impl Serializer {
 		if self.done {
 			Some(move |t| {
 				self.done = false;
-				if self.serializer.is_none() || !self
-					.serializer
-					.as_ref()
-					.unwrap()
-					.as_any_ref()
-					.is::<SerializerInner<T>>()
+				if self.serializer.is_none()
+					|| !self
+						.serializer
+						.as_ref()
+						.unwrap()
+						.as_any_ref()
+						.is::<SerializerInner<T>>()
 				{
 					self.serializer = Some(Box::new(SerializerInner::<T>::new(
 						self.serializer.take().map(|x| x.into_stack_box()),
@@ -342,7 +342,7 @@ impl Drop for Serializer {
 	}
 }
 #[doc(hidden)]
-impl marker::Unpin for Serializer {}
+impl Unpin for Serializer {}
 impl fmt::Debug for Serializer {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		f.debug_struct("Serializer")
@@ -443,7 +443,7 @@ impl<T: serde::de::DeserializeOwned + 'static> DeserializerInner<T> {
 				struct Counter<T: Read>(T, usize);
 				impl<T: Read> Counter<T> {
 					fn new(t: T) -> Self {
-						Counter(t, 0)
+						Self(t, 0)
 					}
 					fn count(&self) -> usize {
 						self.1
@@ -594,9 +594,9 @@ trait DeserializerInnerBox: Send + Sync {
 	fn empty_box(&mut self);
 	fn discard_box(&mut self);
 	fn into_stack_box(self: Box<Self>) -> fringe::OsStack;
-	fn as_any_ref(&self) -> &Any;
-	fn as_any_mut(&mut self) -> &mut Any;
-	fn as_any_box(self: Box<Self>) -> Box<Any>;
+	fn as_any_ref(&self) -> &dyn Any;
+	fn as_any_mut(&mut self) -> &mut dyn Any;
+	fn as_any_box(self: Box<Self>) -> Box<dyn Any>;
 }
 impl<T: serde::de::DeserializeOwned + 'static> DeserializerInnerBox for DeserializerInner<T> {
 	fn next_box(&mut self, x: u8) {
@@ -614,14 +614,14 @@ impl<T: serde::de::DeserializeOwned + 'static> DeserializerInnerBox for Deserial
 	fn into_stack_box(self: Box<Self>) -> fringe::OsStack {
 		self.into_stack()
 	}
-	fn as_any_ref(&self) -> &Any {
-		self as &Any
+	fn as_any_ref(&self) -> &dyn Any {
+		self as &dyn Any
 	}
-	fn as_any_mut(&mut self) -> &mut Any {
-		self as &mut Any
+	fn as_any_mut(&mut self) -> &mut dyn Any {
+		self as &mut dyn Any
 	}
-	fn as_any_box(self: Box<Self>) -> Box<Any> {
-		self as Box<Any>
+	fn as_any_box(self: Box<Self>) -> Box<dyn Any> {
+		self as Box<dyn Any>
 	}
 }
 
@@ -658,7 +658,7 @@ impl<T: serde::de::DeserializeOwned + 'static> DeserializerInnerBox for Deserial
 ///
 /// Will panic if dropped while non-empty. In practise this almost always signifies a bug. If you do want to drop it when non-empty, call [`Deserializer::empty()`] before dropping it.
 pub struct Deserializer {
-	deserializer: Option<Box<DeserializerInnerBox>>,
+	deserializer: Option<Box<dyn DeserializerInnerBox>>,
 	done: bool,
 	pending: bool,
 	mid: bool,
@@ -687,27 +687,26 @@ impl Deserializer {
 	) -> Option<impl FnOnce() -> T + 'a> {
 		if self.done {
 			self.done = false;
-			if self.deserializer.is_none() || !self
-				.deserializer
-				.as_ref()
-				.unwrap()
-				.as_any_ref()
-				.is::<DeserializerInner<T>>()
+			if self.deserializer.is_none()
+				|| !self
+					.deserializer
+					.as_ref()
+					.unwrap()
+					.as_any_ref()
+					.is::<DeserializerInner<T>>()
 			{
 				self.deserializer = Some(Box::new(DeserializerInner::<T>::new(
 					self.deserializer.take().map(|x| x.into_stack_box()),
 				)));
 			}
-			assert!(
-				!self
-					.deserializer
-					.as_mut()
-					.unwrap()
-					.as_any_mut()
-					.downcast_mut::<DeserializerInner<T>>()
-					.unwrap()
-					.done()
-			);
+			assert!(!self
+				.deserializer
+				.as_mut()
+				.unwrap()
+				.as_any_mut()
+				.downcast_mut::<DeserializerInner<T>>()
+				.unwrap()
+				.done());
 		}
 		if self.pending {
 			Some(move || {
@@ -778,7 +777,7 @@ impl Drop for Deserializer {
 	}
 }
 #[doc(hidden)]
-impl marker::Unpin for Deserializer {}
+impl Unpin for Deserializer {}
 impl fmt::Debug for Deserializer {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		f.debug_struct("Deserializer")
@@ -792,7 +791,7 @@ impl fmt::Debug for Deserializer {
 #[cfg(test)]
 mod tests {
 	#![allow(
-		clippy::cyclomatic_complexity,
+		clippy::cognitive_complexity,
 		clippy::let_unit_value,
 		clippy::collapsible_if
 	)]
