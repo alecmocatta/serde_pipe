@@ -1,0 +1,15 @@
+pull_request_rules:
+  - name: automatic merge on approval and CI pass
+    conditions:
+      - "#approved-reviews-by>=1"
+      - "#review-requested=0"
+      - "#changes-requested-reviews-by=0"
+      - "#commented-reviews-by=0"
+      - status-success=alecmocatta.serde_pipe
+      - base=master
+      - label!=work-in-progress
+    actions:
+      merge:
+        method: merge
+        strict: smart
+      delete_head_branch: {}
