@@ -4,7 +4,7 @@
 [![MIT / Apache 2.0 licensed](https://img.shields.io/crates/l/serde_pipe.svg?maxAge=2592000)](#License)
 [![Build Status](https://dev.azure.com/alecmocatta/serde_pipe/_apis/build/status/alecmocatta.serde_pipe?branchName=master)](https://dev.azure.com/alecmocatta/serde_pipe/_build/latest?definitionId=1&branchName=master)
 
-[Docs](https://docs.rs/serde_pipe/0.1.0)
+[Docs](https://docs.rs/serde_pipe/0.1.1)
 
 Turn serde+bincode into a pipe: push `T`s and pull `u8`s, or vice versa.
 
