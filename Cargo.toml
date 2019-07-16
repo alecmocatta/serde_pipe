@@ -14,6 +14,7 @@ repository = "https://github.com/alecmocatta/serde_pipe"
 homepage = "https://github.com/alecmocatta/serde_pipe"
 documentation = "https://docs.rs/serde_pipe/0.1.0"
 readme = "README.md"
+edition = "2018"
 
 [badges]
 azure-devops = { project = "alecmocatta/serde_pipe", pipeline = "alecmocatta.serde_pipe" }

@@ -1,6 +1,11 @@
 trigger: ["master"]
 pr: ["master"]
 
+variables:
+  rust_toolchain: nightly
+  rust_lint_toolchain: nightly-2019-07-15
+  rustflags_variations: ';'
+
 strategy:
   matrix:
     # windows:
@@ -22,39 +27,30 @@ strategy:
 pool:
   vmImage: $(imageName)
 
-variables:
-  rust_toolchain: nightly
-  rust_lint_toolchain: nightly-2019-07-15
-  rustflags_variations: ';'
-
 # From https://github.com/tokio-rs/tokio/blob/master/ci/azure-install-rust.yml
 steps:
-  # Windows.
   - script: |
       curl -sSf -o rustup-init.exe https://win.rustup.rs
       rustup-init.exe -y --default-toolchain none
       echo "##vso[task.setvariable variable=PATH;]%PATH%;%USERPROFILE%\.cargo\bin"
-    displayName: "Install rust (windows)"
+    displayName: "Install Rust (Windows)"
     condition: eq(variables['Agent.OS'], 'Windows_NT')
 
-  # macOS.
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
       curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
       echo "##vso[task.setvariable variable=PATH;]$PATH:$HOME/.cargo/bin"
-    displayName: "Install rust (darwin)"
+    displayName: "Install Rust (Darwin)"
     condition: eq(variables['Agent.OS'], 'Darwin')
 
-  # Linux.
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
       curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
       echo "##vso[task.setvariable variable=PATH;]$PATH:$HOME/.cargo/bin"
       sudo apt-get install -y gcc-multilib
-    displayName: "Install rust (linux)"
+    displayName: "Install Rust (Linux)"
     condition: eq(variables['Agent.OS'], 'Linux')
 
-  # All platforms.
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
       rustup toolchain install $RUST_TOOLCHAIN
@@ -67,12 +63,15 @@ steps:
       rustup toolchain list
       rustc -Vv
       cargo -V
-    displayName: Query rust and cargo versions
+    displayName: Install Rust matrix
 
-  # All platforms.
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
       cargo +$RUST_LINT_TOOLCHAIN fmt -- --check
+    displayName: Check formatting
+
+  - bash: |
+      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
       OLD_IFS=$IFS IFS=";"; for RUSTFLAGS in $RUSTFLAGS_VARIATIONS; do ( IFS=$OLD_IFS
         export RUSTFLAGS
         for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do (
@@ -95,7 +94,11 @@ steps:
           ); done
         ); done
       ); done; IFS=$OLD_IFS
+    displayName: Build & Run
+
+  - bash: |
+      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
       for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do
         cargo +$RUST_LINT_TOOLCHAIN doc --no-deps --target "$TARGET" --all-features --release &>/dev/null
       done
-    displayName: Build
+    displayName: Check documentation
