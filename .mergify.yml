@@ -1,15 +1,39 @@
 pull_request_rules:
-  - name: automatic merge on approval and CI pass
+  - name: automatic merge
     conditions:
+      - base=master
+      - status-success=alecmocatta.serde_pipe
+      - label!=work-in-progress
       - "#approved-reviews-by>=1"
       - "#review-requested=0"
       - "#changes-requested-reviews-by=0"
       - "#commented-reviews-by=0"
-      - status-success=alecmocatta.serde_pipe
-      - base=master
-      - label!=work-in-progress
     actions:
       merge:
         method: merge
         strict: smart
       delete_head_branch: {}
+  - name: automatic merge
+    conditions:
+      - base=master
+      - status-success=alecmocatta.serde_pipe
+      - label!=work-in-progress
+      - author=alecmocatta # https://github.com/Mergifyio/mergify-engine/issues/451
+      - "#review-requested=0"
+      - "#changes-requested-reviews-by=0"
+      - "#commented-reviews-by=0"
+    actions:
+      merge:
+        method: merge
+        strict: smart
+      delete_head_branch: {}
+  - name: dismiss reviews
+    conditions: []
+    actions:
+      dismiss_reviews: {}
+  - name: auto add wip label
+    conditions:
+      - "title~=^WIP: .*"
+    actions:
+      label:
+        add: ["work-in-progress"]
