@@ -53,16 +53,16 @@ steps:
 
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
-      rustup toolchain install $RUST_TOOLCHAIN
-      rustup default $RUST_TOOLCHAIN
-      for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do [ "$TARGET" = $(rustup target list | grep default | grep -o -e '^[^ ]\+') ] || rustup target add "$TARGET"; done
-      rustup toolchain add $RUST_LINT_TOOLCHAIN
+      for TOOLCHAIN in $RUST_TOOLCHAIN; do (
+        rustup toolchain install $TOOLCHAIN
+        for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do [ "$TARGET" = $(rustup target list | grep default | grep -o -e '^[^ ]\+') ] || rustup target add --toolchain $TOOLCHAIN "$TARGET"; done
+        rustc +$TOOLCHAIN -Vv
+        cargo +$TOOLCHAIN -V
+      ); done
+      rustup toolchain install $RUST_LINT_TOOLCHAIN
       rustup component add rustfmt --toolchain $RUST_LINT_TOOLCHAIN
       rustup component add clippy --toolchain $RUST_LINT_TOOLCHAIN
       for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do [ "$TARGET" = $(rustup target list | grep default | grep -o -e '^[^ ]\+') ] || rustup target add --toolchain $RUST_LINT_TOOLCHAIN "$TARGET"; done
-      rustup toolchain list
-      rustc -Vv
-      cargo -V
     displayName: Install Rust matrix
 
   - bash: |
@@ -72,28 +72,29 @@ steps:
 
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
-      OLD_IFS=$IFS IFS=";"; for RUSTFLAGS in $RUSTFLAGS_VARIATIONS; do ( IFS=$OLD_IFS
-        export RUSTFLAGS
-        for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do (
-          cargo +$RUST_LINT_TOOLCHAIN clippy --target "$TARGET" --all-targets --all-features -- -D warnings
-        ); done
-        for TARGET in $RUST_TARGET_BUILD $RUST_TARGET_RUN; do (
-          # [ \( "$TRAVIS_OS_NAME" = "osx" -o \( "$TRAVIS_OS_NAME" = "linux" -a "${DIST-}" = "precise" \) \) -a \( "$TARGET" = "x86_64-unknown-linux-musl" -o "$TARGET" = "i686-unknown-linux-musl" \) ] && RUSTFLAGS="$RUSTFLAGS -C linker=rust-lld"
-          cargo build --verbose --target "$TARGET" --all-targets --all-features
-          case "${TARGET%%-*}" in i386|i686|x86_64) RUSTFLAGS="$RUSTFLAGS -C target-cpu=native";; esac
-          cargo build --verbose --target "$TARGET" --all-targets --all-features --release
-        ); done
-        for TARGET in $RUST_TARGET_RUN; do (
-          # [ \( "$TRAVIS_OS_NAME" = "osx" -o \( "$TRAVIS_OS_NAME" = "linux" -a "${DIST-}" = "precise" \) \) -a \( "$TARGET" = "x86_64-unknown-linux-musl" -o "$TARGET" = "i686-unknown-linux-musl" \) ] && RUSTFLAGS="$RUSTFLAGS -C linker=rust-lld"
-          RUST_BACKTRACE=full cargo test --target "$TARGET" --all-features
-          RUSTFLAGS="$RUSTFLAGS -C target-cpu=native" RUST_BACKTRACE=full cargo test --target "$TARGET" --all-features --release
-          RUSTFLAGS="$RUSTFLAGS -C target-cpu=native" RUST_BACKTRACE=full cargo bench --target "$TARGET" --all-features
-          [ ! -d examples ] || for example in examples/*; do example=${example##*/}; (
-            RUST_BACKTRACE=full cargo run --target "$TARGET" --example ${example%.*} --all-features
-            RUSTFLAGS="$RUSTFLAGS -C target-cpu=native" RUST_BACKTRACE=full cargo run --target "$TARGET" --example ${example%.*} --all-features --release
+      for TOOLCHAIN in $RUST_TOOLCHAIN; do (
+        export TOOLCHAIN
+        OLD_IFS=$IFS IFS=";"; for RUSTFLAGS in $RUSTFLAGS_VARIATIONS; do ( IFS=$OLD_IFS
+          export RUSTFLAGS
+          for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do (
+            cargo +$RUST_LINT_TOOLCHAIN clippy --target "$TARGET" --all-targets --all-features -- -D warnings
           ); done
-        ); done
-      ); done; IFS=$OLD_IFS
+          for TARGET in $RUST_TARGET_BUILD $RUST_TARGET_RUN; do (
+            cargo +$TOOLCHAIN build --verbose --target "$TARGET" --all-targets --all-features
+            case "${TARGET%%-*}" in i386|i686|x86_64) RUSTFLAGS="$RUSTFLAGS -C target-cpu=native";; esac
+            cargo +$TOOLCHAIN build --verbose --target "$TARGET" --all-targets --all-features --release
+          ); done
+          for TARGET in $RUST_TARGET_RUN; do (
+            RUST_BACKTRACE=full cargo +$TOOLCHAIN test --target "$TARGET" --all-features
+            RUSTFLAGS="$RUSTFLAGS -C target-cpu=native" RUST_BACKTRACE=full cargo +$TOOLCHAIN test --target "$TARGET" --all-features --release
+            RUSTFLAGS="$RUSTFLAGS -C target-cpu=native" RUST_BACKTRACE=full cargo +$TOOLCHAIN bench --target "$TARGET" --all-features
+            [ ! -d examples ] || for example in examples/*; do example=${example##*/}; (
+              RUST_BACKTRACE=full cargo +$TOOLCHAIN run --target "$TARGET" --example ${example%.*} --all-features
+              RUSTFLAGS="$RUSTFLAGS -C target-cpu=native" RUST_BACKTRACE=full cargo +$TOOLCHAIN run --target "$TARGET" --example ${example%.*} --all-features --release
+            ); done
+          ); done
+        ); done; IFS=$OLD_IFS
+      ); done
     displayName: Build & Run
 
   - bash: |
