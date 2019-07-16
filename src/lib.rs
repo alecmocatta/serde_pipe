@@ -50,13 +50,6 @@
 	clippy::boxed_local
 )]
 
-extern crate bincode;
-extern crate either;
-extern crate fringe;
-#[cfg(test)]
-extern crate rand;
-extern crate serde;
-
 use either::Either;
 use std::{
 	any::Any, fmt, io::{self, Read, Write}, marker
