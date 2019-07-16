@@ -1,105 +1,23 @@
 trigger: ["master"]
 pr: ["master"]
 
-variables:
-  rust_toolchain: nightly
-  rust_lint_toolchain: nightly-2019-07-15
-  rustflags_variations: ';'
-
-strategy:
-  matrix:
-    # windows:
-    #   imageName: 'vs2017-win2016'
-    #   rust_target_check: ''
-    #   rust_target_build: ''
-    #   rust_target_run: 'x86_64-pc-windows-msvc x86_64-pc-windows-gnu i686-pc-windows-msvc i686-pc-windows-gnu'
-    mac:
-      imageName: 'macos-10.13'
+jobs:
+- template: azure-rust.yml  # Template reference
+  parameters:
+    default:
+      rust_toolchain: nightly
+      rust_lint_toolchain: nightly-2019-07-15
+      rustflags_variations: ';'
       rust_target_check: ''
       rust_target_build: ''
-      rust_target_run: 'x86_64-apple-darwin i686-apple-darwin'
-    linux:
-      imageName: 'ubuntu-16.04'
-      rust_target_check: ''
-      rust_target_build: ''
-      rust_target_run: 'x86_64-unknown-linux-gnu i686-unknown-linux-gnu x86_64-unknown-linux-musl i686-unknown-linux-musl'
-
-pool:
-  vmImage: $(imageName)
-
-# From https://github.com/tokio-rs/tokio/blob/master/ci/azure-install-rust.yml
-steps:
-  - script: |
-      curl -sSf -o rustup-init.exe https://win.rustup.rs
-      rustup-init.exe -y --default-toolchain none
-      echo "##vso[task.setvariable variable=PATH;]%PATH%;%USERPROFILE%\.cargo\bin"
-    displayName: "Install Rust (Windows)"
-    condition: eq(variables['Agent.OS'], 'Windows_NT')
-
-  - bash: |
-      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
-      curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
-      echo "##vso[task.setvariable variable=PATH;]$PATH:$HOME/.cargo/bin"
-    displayName: "Install Rust (Darwin)"
-    condition: eq(variables['Agent.OS'], 'Darwin')
-
-  - bash: |
-      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
-      curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
-      echo "##vso[task.setvariable variable=PATH;]$PATH:$HOME/.cargo/bin"
-      sudo apt-get install -y gcc-multilib
-    displayName: "Install Rust (Linux)"
-    condition: eq(variables['Agent.OS'], 'Linux')
-
-  - bash: |
-      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
-      for TOOLCHAIN in $RUST_TOOLCHAIN; do (
-        rustup toolchain install $TOOLCHAIN
-        for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do [ "$TARGET" = $(rustup target list | grep default | grep -o -e '^[^ ]\+') ] || rustup target add --toolchain $TOOLCHAIN "$TARGET"; done
-        rustc +$TOOLCHAIN -Vv
-        cargo +$TOOLCHAIN -V
-      ); done
-      rustup toolchain install $RUST_LINT_TOOLCHAIN
-      rustup component add rustfmt --toolchain $RUST_LINT_TOOLCHAIN
-      rustup component add clippy --toolchain $RUST_LINT_TOOLCHAIN
-      for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do [ "$TARGET" = $(rustup target list | grep default | grep -o -e '^[^ ]\+') ] || rustup target add --toolchain $RUST_LINT_TOOLCHAIN "$TARGET"; done
-    displayName: Install Rust matrix
-
-  - bash: |
-      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
-      cargo +$RUST_LINT_TOOLCHAIN fmt -- --check
-    displayName: Check formatting
-
-  - bash: |
-      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
-      for TOOLCHAIN in $RUST_TOOLCHAIN; do (
-        export TOOLCHAIN
-        OLD_IFS=$IFS IFS=";"; for RUSTFLAGS in $RUSTFLAGS_VARIATIONS; do ( IFS=$OLD_IFS
-          export RUSTFLAGS
-          for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do (
-            cargo +$RUST_LINT_TOOLCHAIN clippy --target "$TARGET" --all-targets --all-features -- -D warnings
-          ); done
-          for TARGET in $RUST_TARGET_BUILD $RUST_TARGET_RUN; do (
-            cargo +$TOOLCHAIN build --verbose --target "$TARGET" --all-targets --all-features
-            case "${TARGET%%-*}" in i386|i686|x86_64) RUSTFLAGS="$RUSTFLAGS -C target-cpu=native";; esac
-            cargo +$TOOLCHAIN build --verbose --target "$TARGET" --all-targets --all-features --release
-          ); done
-          for TARGET in $RUST_TARGET_RUN; do (
-            RUST_BACKTRACE=full cargo +$TOOLCHAIN test --target "$TARGET" --all-features
-            RUSTFLAGS="$RUSTFLAGS -C target-cpu=native" RUST_BACKTRACE=full cargo +$TOOLCHAIN test --target "$TARGET" --all-features --release
-            RUSTFLAGS="$RUSTFLAGS -C target-cpu=native" RUST_BACKTRACE=full cargo +$TOOLCHAIN bench --target "$TARGET" --all-features
-            [ ! -d examples ] || for example in examples/*; do example=${example##*/}; (
-              RUST_BACKTRACE=full cargo +$TOOLCHAIN run --target "$TARGET" --example ${example%.*} --all-features
-              RUSTFLAGS="$RUSTFLAGS -C target-cpu=native" RUST_BACKTRACE=full cargo +$TOOLCHAIN run --target "$TARGET" --example ${example%.*} --all-features --release
-            ); done
-          ); done
-        ); done; IFS=$OLD_IFS
-      ); done
-    displayName: Build & Run
-
-  - bash: |
-      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
-      for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do
-        cargo +$RUST_LINT_TOOLCHAIN doc --no-deps --target "$TARGET" --all-features --release &>/dev/null
-      done
-    displayName: Check documentation
+      rust_target_run: ''
+    matrix:
+      # windows:
+      #   imageName: 'vs2017-win2016'
+      #   rust_target_run: 'x86_64-pc-windows-msvc x86_64-pc-windows-gnu i686-pc-windows-msvc i686-pc-windows-gnu'
+      mac:
+        imageName: 'macos-10.13'
+        rust_target_run: 'x86_64-apple-darwin i686-apple-darwin'
+      linux:
+        imageName: 'ubuntu-16.04'
+        rust_target_run: 'x86_64-unknown-linux-gnu i686-unknown-linux-gnu x86_64-unknown-linux-musl i686-unknown-linux-musl'
