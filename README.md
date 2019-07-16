@@ -1,7 +1,7 @@
 # serde_pipe
 
 [![Crates.io](https://img.shields.io/crates/v/serde_pipe.svg?maxAge=86400)](https://crates.io/crates/serde_pipe)
-[![Apache-2.0 licensed](https://img.shields.io/crates/l/serde_pipe.svg?maxAge=2592000)](LICENSE.txt)
+[![MIT / Apache 2.0 licensed](https://img.shields.io/crates/l/serde_pipe.svg?maxAge=2592000)](#License)
 [![Build Status](https://dev.azure.com/alecmocatta/serde_pipe/_apis/build/status/alecmocatta.serde_pipe?branchName=master)](https://dev.azure.com/alecmocatta/serde_pipe/_build/latest?definitionId=1&branchName=master)
 
 [Docs](https://docs.rs/serde_pipe/0.1.0)
@@ -38,6 +38,11 @@ This crate currently depends on [libfringe](https://github.com/edef1c/libfringe)
  * The platforms currently supported are: bare metal, Linux (any libc), FreeBSD, DragonFly BSD, macOS. Windows is not supported.
 
 ## License
-Licensed under Apache License, Version 2.0, ([LICENSE.txt](LICENSE.txt) or http://www.apache.org/licenses/LICENSE-2.0).
+Licensed under either of
 
-Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be licensed as above, without any additional terms or conditions.
+ * Apache License, Version 2.0, ([LICENSE-APACHE.txt](LICENSE-APACHE.txt) or http://www.apache.org/licenses/LICENSE-2.0)
+ * MIT license ([LICENSE-MIT.txt](LICENSE-MIT.txt) or http://opensource.org/licenses/MIT)
+
+at your option.
+
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
