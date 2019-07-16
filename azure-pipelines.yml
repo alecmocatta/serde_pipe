@@ -2,12 +2,13 @@ trigger: ["master"]
 pr: ["master"]
 
 jobs:
-- template: azure-rust.yml  # Template reference
+- template: azure-rust.yml
   parameters:
     default:
       rust_toolchain: nightly
       rust_lint_toolchain: nightly-2019-07-15
-      rustflags_variations: ';'
+      rust_flags: ''
+      rust_features: ''
       rust_target_check: ''
       rust_target_build: ''
       rust_target_run: ''
