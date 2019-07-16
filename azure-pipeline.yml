@@ -1,8 +1,15 @@
 trigger: ["master"]
 pr: ["master"]
 
+resources:
+  repositories:
+    - repository: templates
+      type: github
+      name: alecmocatta/azure-pipeline-templates
+      endpoint: alecmocatta
+
 jobs:
-- template: azure-rust.yml
+- template: rust.yml@templates
   parameters:
     default:
       rust_toolchain: nightly
