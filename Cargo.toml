@@ -1,6 +1,6 @@
 [package]
 name = "serde_pipe"
-version = "0.1.0"
+version = "0.1.1"
 license = "Apache-2.0"
 authors = ["Alec Mocatta <alec@mocatta.net>"]
 categories = ["development-tools"]
@@ -12,7 +12,7 @@ This library gives you a `Serializer` pipe, into which you can push `T`s and pul
 """
 repository = "https://github.com/alecmocatta/serde_pipe"
 homepage = "https://github.com/alecmocatta/serde_pipe"
-documentation = "https://docs.rs/serde_pipe/0.1.0"
+documentation = "https://docs.rs/serde_pipe/0.1.1"
 readme = "README.md"
 edition = "2018"
 
