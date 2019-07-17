@@ -10,8 +10,7 @@
 //!
 //! # Example
 //!
-//! ```rust,no_run
-//! extern crate serde_pipe;
+//! ```no_run
 //! use serde_pipe::Serializer;
 //!
 //! let large_vector = (0..1u64<<30).collect::<Vec<_>>();
@@ -212,8 +211,7 @@ impl<T: serde::ser::Serialize + 'static> SerializerInnerBox for SerializerInner<
 ///
 /// # Example
 ///
-/// ```rust,no_run
-/// extern crate serde_pipe;
+/// ```no_run
 /// use serde_pipe::Serializer;
 ///
 /// let large_vector = (0..1u64<<30).collect::<Vec<_>>();
@@ -628,8 +626,7 @@ impl<T: serde::de::DeserializeOwned + 'static> DeserializerInnerBox for Deserial
 ///
 /// # Example
 ///
-/// ```rust
-/// extern crate serde_pipe;
+/// ```
 /// use serde_pipe::{Serializer,Deserializer};
 ///
 /// let large_vector = (0..1u64<<10).collect::<Vec<_>>();
