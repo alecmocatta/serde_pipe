@@ -71,8 +71,8 @@ unsafe impl<T: serde::ser::Serialize + 'static> Send for SerializerInner<T> {}
 unsafe impl<T: serde::ser::Serialize + 'static> Sync for SerializerInner<T> {}
 impl<T: serde::ser::Serialize + 'static> SerializerInner<T> {
 	#[inline(always)]
-	fn new(stack: Option<fringe::OsStack>) -> Self {
-		let stack = stack.unwrap_or_else(|| fringe::OsStack::new(64 * 1024).unwrap());
+		fn new(stack: Option<fringe::OsStack>) -> Self {
+	let stack = stack.unwrap_or_else(|| fringe::OsStack::new(64 * 1024).unwrap());
 		let generator = fringe::generator::Generator::<SerializerMsg<T>, Option<u8>, _>::new(
 			stack,
 			move |yielder, t| {
