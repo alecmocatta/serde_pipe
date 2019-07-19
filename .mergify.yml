@@ -2,7 +2,7 @@ pull_request_rules:
   - name: automatic merge
     conditions:
       - base=master
-      - status-success=alecmocatta.serde_pipe
+      - status-success=tests
       - label!=work-in-progress
       - "#approved-reviews-by>=1"
       - "#review-requested=0"
@@ -16,7 +16,7 @@ pull_request_rules:
   - name: automatic merge
     conditions:
       - base=master
-      - status-success=alecmocatta.serde_pipe
+      - status-success=tests
       - label!=work-in-progress
       - author=alecmocatta # https://github.com/Mergifyio/mergify-engine/issues/451
       - "#review-requested=0"
