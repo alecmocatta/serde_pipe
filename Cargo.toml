@@ -17,7 +17,7 @@ readme = "README.md"
 edition = "2018"
 
 [badges]
-azure-devops = { project = "alecmocatta/serde_pipe", pipeline = "alecmocatta.serde_pipe" }
+azure-devops = { project = "alecmocatta/serde_pipe", pipeline = "tests" }
 maintenance = { status = "actively-developed" }
 
 [dependencies]
