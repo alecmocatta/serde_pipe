@@ -28,7 +28,7 @@
 //!  * The architectures currently supported are: x86, x86_64, aarch64, or1k;
 //!  * The platforms currently supported are: bare metal, Linux (any libc), FreeBSD, DragonFly BSD, macOS. Windows is not supported.
 
-#![doc(html_root_url = "https://docs.rs/serde_pipe/0.1.1")]
+#![doc(html_root_url = "https://docs.rs/serde_pipe/0.1.2")]
 #![warn(
 	missing_copy_implementations,
 	missing_debug_implementations,
