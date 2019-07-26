@@ -21,7 +21,7 @@ azure-devops = { project = "alecmocatta/serde_pipe", pipeline = "tests" }
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-fringe = { git = "https://github.com/edef1c/libfringe" }
+fringe = { git = "https://github.com/edef1c/libfringe", optional = true }
 bincode = "1.0"
 serde = "1.0"
 either = { version = "1.5" }
