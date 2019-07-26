@@ -1,5 +1,5 @@
 use std::{
-	any::TypeId, fmt, io::{self, Read}, mem
+	any::TypeId, fmt, io::{self, Read}
 };
 
 struct ReadCounter<T: Read>(T, usize);
@@ -20,6 +20,9 @@ impl<T: Read> Read for ReadCounter<T> {
 		})
 	}
 }
+
+/// As documented <https://github.com/servo/bincode>
+const USIZE_BINCODE_LEN: usize = 8;
 
 /// Serializer pipe: push `T`; pull `u8`.
 ///
@@ -65,16 +68,18 @@ impl Serializer {
 	) -> Option<impl FnOnce(T) + 'a> {
 		if self.buffer.is_none() {
 			Some(move |t| {
-				let mut vec = vec![0; mem::size_of::<usize>()];
+				// TODO: reuse vec
+				let mut vec = vec![0; USIZE_BINCODE_LEN + 1];
+				let _ = vec.pop().unwrap();
 				bincode::serialize_into(&mut vec, &t).unwrap();
-				let mut len = vec.len() - mem::size_of::<usize>();
+				let mut len = vec.len() - USIZE_BINCODE_LEN;
 				if len == 0 {
 					len += 1;
 					vec.push(0);
 				}
-				let mut len_vec = Vec::with_capacity(mem::size_of::<usize>());
+				let mut len_vec = Vec::with_capacity(USIZE_BINCODE_LEN);
 				bincode::serialize_into::<_, usize>(&mut len_vec, &len).unwrap();
-				vec[..mem::size_of::<usize>()].copy_from_slice(&len_vec);
+				vec[..USIZE_BINCODE_LEN].copy_from_slice(&len_vec);
 				self.buffer = Some((vec.into_boxed_slice(), 0));
 			})
 		} else {
@@ -173,7 +178,7 @@ impl Deserializer {
 	#[inline(always)]
 	pub fn new() -> Self {
 		Self {
-			buffer: Vec::with_capacity(9),
+			buffer: Vec::with_capacity(USIZE_BINCODE_LEN + 1),
 			len: 0,
 			deserializer: None,
 		}
@@ -225,10 +230,10 @@ impl Deserializer {
 		if self.deserializer.is_some() && (self.buffer.len() != self.len || self.len == 0) {
 			Some(move |x| {
 				self.buffer.push(x);
-				if self.len == 0 && self.buffer.len() == mem::size_of::<usize>() {
+				if self.len == 0 && self.buffer.len() == USIZE_BINCODE_LEN {
 					let mut counter = ReadCounter::new(&*self.buffer);
 					self.len = bincode::deserialize_from::<_, usize>(&mut counter).unwrap();
-					assert_eq!(counter.count(), mem::size_of::<usize>());
+					assert_eq!(counter.count(), USIZE_BINCODE_LEN);
 					self.buffer.clear();
 					self.buffer.reserve(self.len);
 				}
