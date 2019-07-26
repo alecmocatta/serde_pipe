@@ -245,15 +245,14 @@ impl Deserializer {
 
 	#[doc(hidden)]
 	pub fn empty_avail(&self) -> bool {
-		!self.buffer.is_empty() || self.len != 0 || self.deserializer.is_some()
+		!self.buffer.is_empty() || self.len != 0
 	}
 	/// Empty this pipe. [`None`] denotes it's already empty. [`Some`] contains an `impl FnOnce()` that can be called to perform the empty.
 	pub fn empty<'a>(&'a mut self) -> Option<impl FnOnce() + 'a> {
-		if !self.buffer.is_empty() || self.len != 0 || self.deserializer.is_some() {
+		if !self.buffer.is_empty() || self.len != 0 {
 			Some(move || {
 				self.buffer.clear();
 				self.len = 0;
-				self.deserializer = None;
 			})
 		} else {
 			None
@@ -263,7 +262,7 @@ impl Deserializer {
 impl Drop for Deserializer {
 	#[inline(always)]
 	fn drop(&mut self) {
-		assert!(self.buffer.is_empty() && self.len == 0 && self.deserializer.is_none());
+		assert!(self.buffer.is_empty() && self.len == 0);
 	}
 }
 impl fmt::Debug for Deserializer {
