@@ -27,4 +27,4 @@ serde = "1.0"
 either = { version = "1.5" }
 
 [dev-dependencies]
-rand = { version = "0.7", features = ["small_rng"] }
+rand = { version = "0.8", features = ["small_rng"] }
